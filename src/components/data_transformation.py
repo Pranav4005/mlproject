@@ -27,33 +27,40 @@ class DataTransformation:
     def get_data_transformer_object(self):
         try:
             numerical_columns = ["writing_score", "reading_score"]
-            categorical_columns = ["gender", "race_ethnicity", "parental_level_of_education", "lunch", "test_preparation_course"]
+            categorical_columns = [
+                "gender",
+                "race_ethnicity",
+                "parental_level_of_education",
+                "lunch",
+                "test_preparation_course",
+            ]
             num_pipeline = Pipeline(
                 steps=[
                     ("imputer", SimpleImputer(strategy="median")),
-                    ("scaler", StandardScaler(with_mean=False))
+                    ("scaler", StandardScaler(with_mean=False)),
                 ]
             )
             cat_pipeline = Pipeline(
                 steps=[
                     ("imputer", SimpleImputer(strategy="most_frequent")),
                     ("one_hot_encoder", OneHotEncoder()),
-                    ("scaler", StandardScaler(with_mean=False))
+                    ("scaler", StandardScaler(with_mean=False)),
                 ]
             )
             logging.info("Numerical and categorical pipelines created")
-            preproccessor = ColumnTransformer(
+            preprocessor = ColumnTransformer(
                 transformers=[
                     ("num_pipeline", num_pipeline, numerical_columns),
-                    ("cat_pipeline", cat_pipeline, categorical_columns)
+                    ("cat_pipeline", cat_pipeline, categorical_columns),
                 ]
             )
-            return preproccessor
+
+            return preprocessor
         except Exception as e:
             logging.info("Error occurred in data transformation")
             raise CustomException(e, sys)
 
-    def initiate_data_transformation(self, train_path, test_path):
+    def initiate_data_transformation(self, train_path: str, test_path: str):
         try:
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
@@ -64,6 +71,7 @@ class DataTransformation:
 
             target_column_name = "math_score"
             numerical_columns = ["writing_score", "reading_score"]
+
             input_feature_train_df = train_df.drop(columns=[target_column_name])
             target_feature_train_df = train_df[target_column_name]
 
@@ -80,12 +88,15 @@ class DataTransformation:
 
             logging.info("Saved preprocessor object")
 
-            save_object(file_path=self.data_transformation_config.preprocessor_obj_file_path, obj=preprocessor_obj)
+            save_object(
+                file_path=self.data_transformation_config.preprocessor_obj_file_path,
+                obj=preprocessor_obj,
+            )
 
             return (
                 train_arr,
                 test_arr,
-                self.data_transformation_config.preprocessor_obj_file_path
+                self.data_transformation_config.preprocessor_obj_file_path,
             )
 
         except Exception as e:
